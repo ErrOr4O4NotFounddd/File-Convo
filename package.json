@@ -1,0 +1,13 @@
+{
+  "name": "file-convo",
+  "version": "1.0.0",
+  "description": "File Convo - Personal Local File Converter for Windows",
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "dev:backend": "venv\\Scripts\\uvicorn backend.main:app --reload --port 8000",
+    "test:backend": "venv\\Scripts\\pytest -v"
+  },
+  "author": "",
+  "license": "MIT"
+}
