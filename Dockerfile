@@ -1,4 +1,15 @@
 
+FROM node:20-slim AS frontend-builder
+
+WORKDIR /frontend
+
+COPY frontend/package*.json ./
+RUN npm install
+
+COPY frontend/ ./
+RUN npm run build
+
+
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -18,12 +29,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ ./backend/
-COPY frontend/ ./frontend/
-
-RUN if [ -d frontend/dist ]; then \
-      mkdir -p backend/static && \
-      cp -r frontend/dist/. backend/static/; \
-    fi
+COPY --from=frontend-builder /frontend/dist ./frontend/dist
 
 EXPOSE 8080
 
