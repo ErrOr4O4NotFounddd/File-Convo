@@ -1,4 +1,5 @@
 import os
+import shutil
 import re
 import io
 import uuid
@@ -121,6 +122,8 @@ def merge_pdfs(
             "stats": stats
         }
     except Exception as e:
+        if 'out_path' in locals() and out_path.exists():
+            out_path.unlink(missing_ok=True)
         if merged_doc:
             merged_doc.close()
         err = f"Merge failed: {str(e)}"
@@ -175,6 +178,8 @@ def split_pdf(
             "stats": stats
         }
     except Exception as e:
+        if 'split_folder' in locals() and split_folder.exists():
+            shutil.rmtree(split_folder, ignore_errors=True)
         err = f"PDF split failed: {str(e)}"
         add_history_entry(original_filename, "PDF Split", "error", error_message=err)
         return {"success": False, "error": err}
@@ -235,6 +240,8 @@ def extract_pdf_pages(
             "stats": stats
         }
     except Exception as e:
+        if 'out_path' in locals() and out_path.exists():
+            out_path.unlink(missing_ok=True)
         err = f"Extraction failed: {str(e)}"
         add_history_entry(original_filename, "PDF Extract Pages", "error", error_message=err)
         return {"success": False, "error": err}
@@ -315,6 +322,8 @@ def compress_pdf(
             "stats": stats
         }
     except Exception as e:
+        if 'out_path' in locals() and out_path.exists():
+            out_path.unlink(missing_ok=True)
         err = f"PDF compression failed: {str(e)}"
         add_history_entry(original_filename, "PDF Compress", "error", error_message=err)
         return {"success": False, "error": err}
@@ -533,6 +542,8 @@ def export_organized_pdf(
             "stats": stats
         }
     except Exception as e:
+        if 'out_path' in locals() and out_path.exists():
+            out_path.unlink(missing_ok=True)
         err = f"Export failed: {str(e)}"
         add_history_entry(safe_filename, "PDF Page Organizer", "error", error_message=err)
         return {"success": False, "error": err}

@@ -4,13 +4,13 @@ import type { NavTab } from "./components/Sidebar";
 import { DashboardView } from "./views/DashboardView";
 import { DocumentsView } from "./views/DocumentsView";
 import { ImagesView } from "./views/ImagesView";
+import { ScannerView } from "./views/ScannerView";
 import { PdfToolsView } from "./views/PdfToolsView";
 import { ArchivesView } from "./views/ArchivesView";
 import { PdfToWordView } from "./views/PdfToWordView";
 import { OcrView } from "./views/OcrView";
-import { HistoryView } from "./views/HistoryView";
 import { SettingsView } from "./views/SettingsView";
-import type { SystemStatus, HistoryItem } from "./api/client";
+import type { SystemStatus } from "./api/client";
 import { api } from "./api/client";
 import type { PdfSubTool } from "./views/PdfToolsView";
 import { Shield, Check } from "lucide-react";
@@ -20,7 +20,6 @@ export const App: React.FC = () => {
   const [activePdfSubTool, setActivePdfSubTool] = useState<PdfSubTool>("organize");
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const handleNavigate = (tab: NavTab, subTool?: string) => {
@@ -39,18 +38,8 @@ export const App: React.FC = () => {
     }
   };
 
-  const fetchHistory = async () => {
-    try {
-      const data = await api.getHistory();
-      setHistory(data.history || []);
-    } catch (err) {
-      console.error("Failed to fetch history", err);
-    }
-  };
-
   useEffect(() => {
     fetchSystemStatus();
-    fetchHistory();
   }, []);
 
   const handleOpenFolder = async (targetPath: string) => {
@@ -102,7 +91,6 @@ export const App: React.FC = () => {
           {activeTab === "dashboard" && (
             <DashboardView
               systemStatus={systemStatus}
-              history={history}
               setActiveTab={handleNavigate}
               onOpenFolder={handleOpenFolder}
             />
@@ -112,7 +100,6 @@ export const App: React.FC = () => {
             <DocumentsView
               systemStatus={systemStatus}
               onOpenFolder={handleOpenFolder}
-              refreshHistory={fetchHistory}
             />
           )}
 
@@ -120,15 +107,21 @@ export const App: React.FC = () => {
             <ImagesView
               systemStatus={systemStatus}
               onOpenFolder={handleOpenFolder}
-              refreshHistory={fetchHistory}
             />
           )}
+
+          {activeTab === "scanner" && (
+            <ScannerView
+              systemStatus={systemStatus}
+              onOpenFolder={handleOpenFolder}
+            />
+          )}
+
 
           {activeTab === "pdf" && (
             <PdfToolsView
               systemStatus={systemStatus}
               onOpenFolder={handleOpenFolder}
-              refreshHistory={fetchHistory}
               initialSubTool={activePdfSubTool}
             />
           )}
@@ -137,7 +130,6 @@ export const App: React.FC = () => {
             <ArchivesView
               systemStatus={systemStatus}
               onOpenFolder={handleOpenFolder}
-              refreshHistory={fetchHistory}
             />
           )}
 
@@ -145,22 +137,12 @@ export const App: React.FC = () => {
             <PdfToWordView
               systemStatus={systemStatus}
               onOpenFolder={handleOpenFolder}
-              refreshHistory={fetchHistory}
             />
           )}
 
           {activeTab === "ocr" && (
             <OcrView
               systemStatus={systemStatus}
-              onOpenFolder={handleOpenFolder}
-              refreshHistory={fetchHistory}
-            />
-          )}
-
-          {activeTab === "history" && (
-            <HistoryView
-              history={history}
-              refreshHistory={fetchHistory}
               onOpenFolder={handleOpenFolder}
             />
           )}

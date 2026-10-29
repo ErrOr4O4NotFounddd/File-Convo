@@ -118,4 +118,13 @@ def test_api_archives_create_and_extract(tmp_path):
 def test_api_history():
     res = client.get("/api/history")
     assert res.status_code == 200
-    assert "history" in res.json()
+    assert res.json() == {"history": []}
+
+    # Verify DELETE endpoints safely succeed
+    del_res = client.delete("/api/history")
+    assert del_res.status_code == 200
+    assert del_res.json()["success"] is True
+
+    del_item_res = client.delete("/api/history/dummy-id")
+    assert del_item_res.status_code == 200
+    assert del_item_res.json()["success"] is True

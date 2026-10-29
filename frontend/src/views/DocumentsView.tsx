@@ -8,13 +8,11 @@ import { api } from "../api/client";
 interface DocumentsViewProps {
   systemStatus: SystemStatus | null;
   onOpenFolder: (path: string) => void;
-  refreshHistory: () => void;
 }
 
 export const DocumentsView: React.FC<DocumentsViewProps> = ({
   systemStatus,
   onOpenFolder,
-  refreshHistory,
 }) => {
   const [files, setFiles] = useState<File[]>([]);
   const [customOutputDir, setCustomOutputDir] = useState<string>("");
@@ -33,7 +31,6 @@ export const DocumentsView: React.FC<DocumentsViewProps> = ({
     try {
       const response = await api.convertDocuments(files, customOutputDir || undefined);
       setResults(response.results);
-      refreshHistory();
     } catch (err: any) {
       setGeneralError(err.message || "Document conversion failed.");
     } finally {

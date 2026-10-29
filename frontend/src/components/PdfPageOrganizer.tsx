@@ -26,7 +26,6 @@ import { ResultCard } from "./ResultCard";
 interface PdfPageOrganizerProps {
   systemStatus: SystemStatus | null;
   onOpenFolder: (path: string) => void;
-  refreshHistory: () => void;
 }
 
 export interface OrganizerItem {
@@ -44,7 +43,6 @@ export interface OrganizerItem {
 export const PdfPageOrganizer: React.FC<PdfPageOrganizerProps> = ({
   systemStatus,
   onOpenFolder,
-  refreshHistory,
 }) => {
   // Main PDF state
   const [mainFilename, setMainFilename] = useState<string>("");
@@ -349,7 +347,6 @@ export const PdfPageOrganizer: React.FC<PdfPageOrganizerProps> = ({
       );
 
       setResult(res);
-      refreshHistory();
     } catch (err: any) {
       setErrorMsg(err.message || "Exporting organized PDF failed.");
     } finally {

@@ -1,4 +1,5 @@
 import os
+import shutil
 import zipfile
 import io
 from pathlib import Path
@@ -83,6 +84,8 @@ def create_zip(
             "stats": stats
         }
     except Exception as e:
+        if out_path.exists():
+            out_path.unlink(missing_ok=True)
         err = f"Failed to create ZIP: {str(e)}"
         add_history_entry("Multiple Files", "Create ZIP", "error", error_message=err)
         return {"success": False, "error": err}
@@ -95,7 +98,6 @@ def extract_zip(
     output_dir = get_output_dir(custom_output_dir)
     stem = Path(original_filename).stem
     extract_folder = output_dir / f"{stem}_extracted"
-    extract_folder.mkdir(parents=True, exist_ok=True)
 
     try:
         with io.BytesIO(zip_bytes) as bio:
@@ -104,12 +106,15 @@ def extract_zip(
                 add_history_entry(original_filename, "Extract ZIP", "error", error_message=err)
                 return {"success": False, "error": err}
 
+            extract_folder.mkdir(parents=True, exist_ok=True)
+
             bio.seek(0)
             with zipfile.ZipFile(bio, "r") as zf:
                 # Security: inspect all names for Zip Slip
                 namelist = zf.namelist()
                 for name in namelist:
                     if not is_safe_zip_member(extract_folder, name):
+                        shutil.rmtree(extract_folder, ignore_errors=True)
                         err = f"Security error: Archive contains unsafe relative path '{name}'."
                         add_history_entry(original_filename, "Extract ZIP", "error", error_message=err)
                         return {"success": False, "error": err}
@@ -148,10 +153,14 @@ def extract_zip(
             "stats": stats
         }
     except zipfile.BadZipFile:
+        if extract_folder.exists():
+            shutil.rmtree(extract_folder, ignore_errors=True)
         err = "Corrupted or invalid ZIP archive."
         add_history_entry(original_filename, "Extract ZIP", "error", error_message=err)
         return {"success": False, "error": err}
     except Exception as e:
+        if extract_folder.exists():
+            shutil.rmtree(extract_folder, ignore_errors=True)
         err = f"Extraction failed: {str(e)}"
         add_history_entry(original_filename, "Extract ZIP", "error", error_message=err)
         return {"success": False, "error": err}

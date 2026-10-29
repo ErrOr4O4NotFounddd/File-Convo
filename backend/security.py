@@ -195,24 +195,30 @@ async def validate_and_read_upload(
     total_bytes = 0
     chunk_size = 64 * 1024  # 64 KB chunks
 
-    while True:
-        if hasattr(file, "file") and hasattr(file.file, "read"):
-            chunk = file.file.read(chunk_size)
-        elif hasattr(file, "read"):
-            res = file.read(chunk_size)
-            chunk = await res if asyncio.iscoroutine(res) else res
-        else:
-            chunk = b""
+    try:
+        while True:
+            if hasattr(file, "file") and hasattr(file.file, "read"):
+                chunk = file.file.read(chunk_size)
+            elif hasattr(file, "read"):
+                res = file.read(chunk_size)
+                chunk = await res if asyncio.iscoroutine(res) else res
+            else:
+                chunk = b""
 
-        if not chunk:
-            break
-        total_bytes += len(chunk)
-        if total_bytes > max_bytes:
-            raise HTTPException(
-                status_code=413,
-                detail=f"File '{safe_name}' exceeds maximum allowed size of {size_limit_mb} MB."
-            )
-        chunks.append(chunk)
+            if not chunk:
+                break
+            total_bytes += len(chunk)
+            if total_bytes > max_bytes:
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"File '{safe_name}' exceeds maximum allowed size of {size_limit_mb} MB."
+                )
+            chunks.append(chunk)
+    finally:
+        try:
+            await file.close()
+        except Exception:
+            pass
 
     content = b"".join(chunks)
 

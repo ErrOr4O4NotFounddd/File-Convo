@@ -19,7 +19,6 @@ import { api } from "../api/client";
 interface OcrViewProps {
   systemStatus: SystemStatus | null;
   onOpenFolder: (path: string) => void;
-  refreshHistory: () => void;
 }
 
 type OcrOperation = "image-to-text" | "pdf-to-text" | "searchable-pdf" | "pdf-to-docx";
@@ -27,7 +26,6 @@ type OcrOperation = "image-to-text" | "pdf-to-text" | "searchable-pdf" | "pdf-to
 export const OcrView: React.FC<OcrViewProps> = ({
   systemStatus,
   onOpenFolder,
-  refreshHistory,
 }) => {
   const [operation, setOperation] = useState<OcrOperation>("image-to-text");
   const [files, setFiles] = useState<File[]>([]);
@@ -95,7 +93,6 @@ export const OcrView: React.FC<OcrViewProps> = ({
       }
 
       setResult(res);
-      refreshHistory();
     } catch (err: any) {
       setErrorMsg(err.message || "OCR execution failed.");
     } finally {

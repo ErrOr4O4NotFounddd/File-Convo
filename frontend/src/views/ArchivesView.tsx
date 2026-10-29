@@ -8,13 +8,11 @@ import { api } from "../api/client";
 interface ArchivesViewProps {
   systemStatus: SystemStatus | null;
   onOpenFolder: (path: string) => void;
-  refreshHistory: () => void;
 }
 
 export const ArchivesView: React.FC<ArchivesViewProps> = ({
   systemStatus,
   onOpenFolder,
-  refreshHistory,
 }) => {
   const [mode, setMode] = useState<"create" | "extract">("create");
   const [files, setFiles] = useState<File[]>([]);
@@ -39,7 +37,6 @@ export const ArchivesView: React.FC<ArchivesViewProps> = ({
         const res = await api.extractZip(files[0], customOutputDir || undefined);
         setResult(res);
       }
-      refreshHistory();
     } catch (err: any) {
       setErrorMsg(err.message || "Archive operation failed.");
     } finally {

@@ -8,13 +8,11 @@ import { api } from "../api/client";
 interface PdfToWordViewProps {
   systemStatus: SystemStatus | null;
   onOpenFolder: (path: string) => void;
-  refreshHistory: () => void;
 }
 
 export const PdfToWordView: React.FC<PdfToWordViewProps> = ({
   systemStatus,
   onOpenFolder,
-  refreshHistory,
 }) => {
   const [files, setFiles] = useState<File[]>([]);
   const [customOutputDir, setCustomOutputDir] = useState<string>("");
@@ -32,7 +30,6 @@ export const PdfToWordView: React.FC<PdfToWordViewProps> = ({
     try {
       const res = await api.convertPdfToDocx(files[0], customOutputDir || undefined);
       setResult(res);
-      refreshHistory();
     } catch (err: any) {
       setErrorMsg(err.message || "PDF to Word conversion failed.");
     } finally {

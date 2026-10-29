@@ -265,6 +265,9 @@ def test_7_no_automatic_permanent_output_folder_creation():
     settings = load_settings()
     assert settings.default_output_dir == "", "Default output dir must be empty string by default"
 
+    user_downloads_output = Path.home() / "Downloads" / "FileConvo_Output"
+    existed_before = user_downloads_output.exists()
+
     # Converted file must be created inside TEMP_OUTPUT_DIR
     dummy_img = Image.new("RGB", (50, 50), "white")
     buf = io.BytesIO()
@@ -280,9 +283,12 @@ def test_7_no_automatic_permanent_output_folder_creation():
     assert out_path.exists()
     assert str(TEMP_OUTPUT_DIR) in str(out_path)
 
-    # Downloads/FileConvo_Output should not exist or be auto-created
-    user_downloads_output = Path.home() / "Downloads" / "FileConvo_Output"
-    assert not user_downloads_output.exists(), "FileConvo_Output in user Downloads must not be auto-created"
+    # Downloads/FileConvo_Output must not be auto-created if it did not exist
+    if not existed_before:
+        assert not user_downloads_output.exists(), "FileConvo_Output in user Downloads must not be auto-created"
+
+    # In all environments, verify converted file was never placed into Downloads/FileConvo_Output
+    assert not (user_downloads_output / out_path.name).exists(), "Converted file must not be placed in permanent Downloads folder"
 
 
 def test_8_download_still_works_after_temporary_processing():

@@ -167,10 +167,14 @@ def convert_document_to_pdf(
             }
 
         except subprocess.TimeoutExpired:
+            if 'final_out_path' in locals() and final_out_path.exists():
+                final_out_path.unlink(missing_ok=True)
             error_msg = "Conversion timed out after 60 seconds."
             add_history_entry(original_filename, "Document → PDF", "error", error_message=error_msg)
             return {"success": False, "error": error_msg, "original_filename": original_filename}
         except Exception as e:
+            if 'final_out_path' in locals() and final_out_path.exists():
+                final_out_path.unlink(missing_ok=True)
             error_msg = f"Unexpected error during document conversion: {str(e)}"
             add_history_entry(original_filename, "Document → PDF", "error", error_message=error_msg)
             return {"success": False, "error": error_msg, "original_filename": original_filename}

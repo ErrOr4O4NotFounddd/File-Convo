@@ -90,6 +90,8 @@ def ocr_image_to_text(
             "stats": stats
         }
     except Exception as e:
+        if 'out_path' in locals() and out_path.exists():
+            out_path.unlink(missing_ok=True)
         err = f"OCR processing failed: {str(e)}"
         add_history_entry(original_filename, "Image → TXT (OCR)", "error", error_message=err)
         return {"success": False, "error": err}
@@ -160,6 +162,8 @@ def ocr_pdf_to_text(
             "stats": stats
         }
     except Exception as e:
+        if 'out_path' in locals() and out_path.exists():
+            out_path.unlink(missing_ok=True)
         err = f"PDF OCR failed: {str(e)}"
         add_history_entry(original_filename, "PDF → TXT (OCR)", "error", error_message=err)
         return {"success": False, "error": err}
@@ -227,6 +231,8 @@ def ocr_pdf_to_searchable_pdf(
             "stats": stats
         }
     except Exception as e:
+        if 'out_path' in locals() and out_path.exists():
+            out_path.unlink(missing_ok=True)
         err = f"Searchable PDF generation failed: {str(e)}"
         add_history_entry(original_filename, "Searchable PDF (OCR)", "error", error_message=err)
         return {"success": False, "error": err}
@@ -304,6 +310,8 @@ def ocr_pdf_to_docx(
             "stats": stats
         }
     except Exception as e:
+        if 'out_path' in locals() and out_path.exists():
+            out_path.unlink(missing_ok=True)
         err = f"Scanned PDF to DOCX OCR failed: {str(e)}"
         add_history_entry(original_filename, "Scanned PDF → DOCX (OCR)", "error", error_message=err)
         return {"success": False, "error": err}

@@ -151,6 +151,44 @@ export interface OrganizerPageExportItem {
   rotation?: number;
 }
 
+
+export type ScannerFilterType =
+  | "original"
+  | "magic_color"
+  | "auto_enhance"
+  | "grayscale"
+  | "black_white"
+  | "document"
+  | "enhanced";
+
+export interface ScannerPageConfig {
+  rotation?: number;
+  filter_type?: ScannerFilterType;
+  crop_quad?: number[] | null;
+}
+
+export interface ScannerExportOptions {
+  paper_size: "a4" | "letter" | "fit";
+  page_fit?: "fit" | "fill";
+  orientation: "portrait" | "landscape" | "auto";
+  margin: "normal" | "narrow" | "none";
+  quality: "standard" | "high";
+  add_page_numbers: boolean;
+  output_filename: string;
+  custom_output_dir?: string;
+}
+
+export interface ScannerPreviewResponse {
+  success: boolean;
+  thumbnail: string;
+  original_thumbnail?: string;
+  width: number;
+  height: number;
+  filename: string;
+  detected_corners?: number[] | null;
+  detection_confidence?: number;
+}
+
 export const api = {
   async getSystemStatus(): Promise<SystemStatus> {
     const res = await safeFetch(`${API_BASE}/api/system/status`);
@@ -363,6 +401,87 @@ export const api = {
       body: formData,
     });
     return handleResponse<{ results: ConversionResult[] }>(res, "Target size compression failed");
+  },
+
+
+  async previewScannerFile(file: File): Promise<ScannerPreviewResponse> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await safeFetch(`${API_BASE}/api/scanner/preview-file`, {
+      method: "POST",
+      body: formData,
+    });
+    return handleResponse<ScannerPreviewResponse>(res, "Failed to preview scanner image");
+  },
+
+  async detectScannerCorners(file: File | Blob): Promise<{
+    success: boolean;
+    detected: boolean;
+    corners: number[] | null;
+    confidence: number;
+    filename?: string;
+  }> {
+    const formData = new FormData();
+    const f = file instanceof File ? file : new File([file], "page.jpg", { type: "image/jpeg" });
+    formData.append("file", f);
+    const res = await safeFetch(`${API_BASE}/api/scanner/detect-corners`, {
+      method: "POST",
+      body: formData,
+    });
+    return handleResponse(res, "Failed to detect document corners");
+  },
+
+  async processScannerPreview(
+    file: File | Blob,
+    rotation: number,
+    cropQuad: number[] | null,
+    filterType: string
+  ): Promise<{ success: boolean; thumbnail: string; width: number; height: number }> {
+    const formData = new FormData();
+    const f = file instanceof File ? file : new File([file], "page.jpg", { type: "image/jpeg" });
+    formData.append("file", f);
+    formData.append("rotation", rotation.toString());
+    if (cropQuad) {
+      formData.append("crop_quad", JSON.stringify(cropQuad));
+    }
+    formData.append("filter_type", filterType);
+
+    const res = await safeFetch(`${API_BASE}/api/scanner/process-preview`, {
+      method: "POST",
+      body: formData,
+    });
+    return handleResponse(res, "Failed to render preview");
+  },
+
+  async exportScannedPdf(
+    files: (File | Blob)[],
+    pagesConfig: ScannerPageConfig[],
+    options: ScannerExportOptions
+  ): Promise<ConversionResult> {
+    const formData = new FormData();
+    files.forEach((f, idx) => {
+      const fname = (f as File).name || `page_${idx + 1}.jpg`;
+      formData.append("files", f, fname);
+    });
+    formData.append("pages_config", JSON.stringify(pagesConfig));
+    formData.append("paper_size", options.paper_size);
+    if (options.page_fit) {
+      formData.append("page_fit", options.page_fit);
+    }
+    formData.append("orientation", options.orientation);
+    formData.append("margin", options.margin);
+    formData.append("quality", options.quality);
+    formData.append("add_page_numbers", options.add_page_numbers ? "true" : "false");
+    formData.append("output_filename", options.output_filename);
+    if (options.custom_output_dir) {
+      formData.append("custom_output_dir", options.custom_output_dir);
+    }
+
+    const res = await safeFetch(`${API_BASE}/api/scanner/export-pdf`, {
+      method: "POST",
+      body: formData,
+    });
+    return handleResponse<ConversionResult>(res, "Document Scanner export failed");
   },
 
   getDownloadUrl(path: string, filename?: string): string {

@@ -12,26 +12,22 @@ import {
   ArrowRight,
   ExternalLink,
   FolderOpen,
+  Camera,
   Sparkles,
   Zap,
-  Clock,
-  Download,
   LayoutGrid
 } from "lucide-react";
-import type { SystemStatus, HistoryItem } from "../api/client";
-import { downloadFile } from "../api/client";
+import type { SystemStatus } from "../api/client";
 import type { NavTab } from "../components/Sidebar";
 
 interface DashboardViewProps {
   systemStatus: SystemStatus | null;
-  history: HistoryItem[];
   setActiveTab: (tab: NavTab, subTool?: string) => void;
   onOpenFolder: (path: string) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   systemStatus,
-  history,
   setActiveTab,
   onOpenFolder,
 }) => {
@@ -57,6 +53,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       badge: "P1",
       formats: ["HEIC", "PNG", "JPG", "WebP", "PDF"],
       color: "from-violet-600/20 to-purple-600/20 border-violet-500/30 text-violet-400"
+    },
+    {
+      id: "scanner" as NavTab,
+      title: "Document Scanner → PDF",
+      category: "Scanner",
+      desc: "Scan notes and assignment pages with device camera or gallery. Interactive crop, document filters, and PDF export.",
+      icon: Camera,
+      badge: "NEW",
+      formats: ["Camera Scan", "Crop & Straighten", "B&W Filter", "PDF Export"],
+      color: "from-cyan-600/20 to-blue-600/20 border-cyan-500/30 text-cyan-400"
     },
     {
       id: "pdf" as NavTab,
@@ -312,68 +318,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Recent Conversions Section */}
-      {history.length > 0 && (
-        <div className="rounded-2xl bg-[#131520] border border-[#222538] p-5 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#222538]">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-violet-400" />
-              <h3 className="font-semibold text-sm text-gray-200">Recent Conversions</h3>
-            </div>
-            <button
-              onClick={() => setActiveTab("history")}
-              className="text-xs text-violet-400 hover:text-violet-300 font-medium"
-            >
-              View Full History →
-            </button>
-          </div>
-
-          <div className="divide-y divide-[#1e2133]">
-            {history.slice(0, 5).map((item) => (
-              <div key={item.id} className="py-2.5 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${
-                      item.status === "success" ? "bg-emerald-400" : "bg-rose-400"
-                    }`}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-gray-200 font-medium truncate">{item.original_filename}</p>
-                    <p className="text-[11px] text-gray-400">{item.conversion_type}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 ml-2">
-                  <span className="text-[11px] text-gray-400 whitespace-nowrap">
-                    {new Date(item.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                  {item.output_location && (
-                    <>
-                      <button
-                        onClick={() => {
-                          const filename = item.output_location?.split(/[/\\]/).pop() || "download";
-                          downloadFile(item.output_location!, filename);
-                        }}
-                        className="p-1 rounded text-violet-400 hover:text-white hover:bg-violet-600/40 transition"
-                        title="Download file"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => onOpenFolder(item.output_location!)}
-                        className="p-1 rounded text-gray-400 hover:text-violet-400 hover:bg-[#1f2235] transition"
-                        title="Reveal in Explorer"
-                      >
-                        <FolderOpen className="w-3.5 h-3.5" />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

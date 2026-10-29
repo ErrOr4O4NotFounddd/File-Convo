@@ -27,7 +27,8 @@ from backend.routers import (
     archives,
     pdf_to_word,
     ocr,
-    history
+    history,
+    scanner
 )
 
 _last_temp_cleanup_time: float = 0.0
@@ -146,6 +147,7 @@ app.include_router(archives.router)
 app.include_router(pdf_to_word.router)
 app.include_router(ocr.router)
 app.include_router(history.router)
+app.include_router(scanner.router)
 
 # Mount frontend production build if present (for unified single-container or standalone deployment)
 frontend_dist = PROJECT_ROOT / "frontend" / "dist"
