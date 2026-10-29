@@ -20,14 +20,12 @@ export type PdfSubTool = "organize" | "merge" | "split" | "extract" | "compress"
 interface PdfToolsViewProps {
   systemStatus: SystemStatus | null;
   onOpenFolder: (path: string) => void;
-  refreshHistory: () => void;
   initialSubTool?: PdfSubTool;
 }
 
 export const PdfToolsView: React.FC<PdfToolsViewProps> = ({
   systemStatus,
   onOpenFolder,
-  refreshHistory,
   initialSubTool = "organize",
 }) => {
   const [prevInitialSubTool, setPrevInitialSubTool] = useState<PdfSubTool>(initialSubTool);
@@ -87,7 +85,6 @@ export const PdfToolsView: React.FC<PdfToolsViewProps> = ({
         const res = await api.compressPdf(files[0], compressionLevel, customOutputDir || undefined);
         setResult(res);
       }
-      refreshHistory();
     } catch (err: any) {
       setErrorMsg(err.message || "PDF operation failed.");
     } finally {
@@ -153,7 +150,6 @@ export const PdfToolsView: React.FC<PdfToolsViewProps> = ({
         <PdfPageOrganizer
           systemStatus={systemStatus}
           onOpenFolder={onOpenFolder}
-          refreshHistory={refreshHistory}
         />
       ) : (
         /* Standard Merge, Split, Extract, Compress Workspace */

@@ -19,13 +19,11 @@ import { api } from "../api/client";
 interface ImagesViewProps {
   systemStatus: SystemStatus | null;
   onOpenFolder: (path: string) => void;
-  refreshHistory: () => void;
 }
 
 export const ImagesView: React.FC<ImagesViewProps> = ({
   systemStatus,
   onOpenFolder,
-  refreshHistory,
 }) => {
   const [files, setFiles] = useState<File[]>([]);
   const [customOutputDir, setCustomOutputDir] = useState<string>("");
@@ -190,7 +188,6 @@ export const ImagesView: React.FC<ImagesViewProps> = ({
       });
 
       setResults(response.results);
-      refreshHistory();
     } catch (err: any) {
       setErrorMsg(err.message || "Image processing failed. Please check backend connection.");
     } finally {

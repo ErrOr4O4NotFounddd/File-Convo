@@ -350,12 +350,13 @@ def test_ocr_missing_dependency():
         assert "Tesseract OCR was not found" in res["error"]
 
 def test_history_logging():
+    from backend.config import HISTORY_FILE
     clear_history()
-    add_history_entry("test_photo.jpg", "Image → PNG", "success", "/path/to/test.png")
+    entry = add_history_entry("test_photo.jpg", "Image → PNG", "success", "/path/to/test.png")
+    assert isinstance(entry, dict)
     hist = get_history()
-    assert len(hist) >= 1
-    assert hist[0]["original_filename"] == "test_photo.jpg"
-    assert hist[0]["conversion_type"] == "Image → PNG"
+    assert len(hist) == 0
+    assert not HISTORY_FILE.exists()
 
 def test_cleanup_temp():
     count = cleanup_temp_files()

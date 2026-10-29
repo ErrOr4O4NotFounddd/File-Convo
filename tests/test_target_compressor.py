@@ -9,6 +9,7 @@ from starlette.testclient import TestClient
 
 from backend.main import app
 from backend.services.image_service import compress_to_target_size
+from backend.config import TEMP_OUTPUT_DIR
 
 client = TestClient(app)
 
@@ -304,13 +305,16 @@ def test_api_compress_target_size_batch(complex_jpg_bytes, tmp_path):
         assert r["target_achieved"] is True
         assert r["stats"]["output_size"] <= 45 * 1024
 
-def test_api_download_endpoint(tmp_path):
-    test_file = tmp_path / "download_me.txt"
+def test_api_download_endpoint():
+    TEMP_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    test_file = TEMP_OUTPUT_DIR / "download_me.txt"
     test_file.write_text("Hello download")
-
-    res = client.get(f"/api/system/download?path={str(test_file)}")
-    assert res.status_code == 200
-    assert res.content == b"Hello download"
+    try:
+        res = client.get(f"/api/system/download?path={str(test_file)}")
+        assert res.status_code == 200
+        assert res.content == b"Hello download"
+    finally:
+        test_file.unlink(missing_ok=True)
 
 # --- 10 ACCEPTANCE CRITERIA VERIFICATION TESTS ---
 
@@ -462,18 +466,22 @@ def test_workflow_req7_no_method_not_allowed(complex_jpg_bytes, tmp_path):
         res = client.post(ep, data=data, files=[("files", ("test.jpg", complex_jpg_bytes, "image/jpeg"))])
         assert res.status_code == 200, f"Endpoint {ep} failed with {res.status_code}"
 
-def test_workflow_req8_download_openable(complex_jpg_bytes, tmp_path):
+def test_workflow_req8_download_openable(complex_jpg_bytes):
     """Req 8: Download produces a valid, openable output file."""
     response = client.post(
         "/api/images/process",
-        data={"target_format": "jpg", "quality": "80", "custom_output_dir": str(tmp_path)},
+        data={"target_format": "jpg", "quality": "80"},
         files=[("files", ("download_src.jpg", complex_jpg_bytes, "image/jpeg"))]
     )
+    assert response.status_code == 200
     out_path = response.json()["results"][0]["output_path"]
-    download_res = client.get(f"/api/system/download?path={out_path}")
-    assert download_res.status_code == 200
-    with Image.open(io.BytesIO(download_res.content)) as im:
-        assert im.format == "JPEG"
+    try:
+        download_res = client.get(f"/api/system/download?path={out_path}")
+        assert download_res.status_code == 200
+        with Image.open(io.BytesIO(download_res.content)) as im:
+            assert im.format == "JPEG"
+    finally:
+        Path(out_path).unlink(missing_ok=True)
 
 def test_workflow_req9_png_transparency_to_jpeg(transparent_png_bytes, tmp_path):
     """Req 9: PNG transparency is handled correctly when converting to JPEG (no black square artifacts)."""

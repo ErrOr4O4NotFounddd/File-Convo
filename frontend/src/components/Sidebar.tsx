@@ -7,13 +7,13 @@ import {
   Archive,
   FileType,
   ScanText,
-  History,
   Settings as SettingsIcon,
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
   AlertTriangle,
-  FolderOpen
+  FolderOpen,
+  Camera
 } from "lucide-react";
 import type { SystemStatus } from "../api/client";
 
@@ -21,11 +21,11 @@ export type NavTab =
   | "dashboard"
   | "documents"
   | "images"
+  | "scanner"
   | "pdf"
   | "archives"
   | "pdf-to-word"
   | "ocr"
-  | "history"
   | "settings";
 
 interface SidebarProps {
@@ -49,11 +49,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "documents", label: "Document Converter", icon: FileText, badge: "P1" },
     { id: "images", label: "Image Tools", icon: ImageIcon, badge: "HEIC" },
+    { id: "scanner", label: "Document Scanner", icon: Camera, badge: "NEW" },
     { id: "pdf", label: "PDF Tools", icon: FileStack, badge: "P1" },
     { id: "archives", label: "Archive Tools", icon: Archive, badge: "ZIP" },
     { id: "pdf-to-word", label: "PDF to Word", icon: FileType, badge: "P2" },
     { id: "ocr", label: "OCR & Extraction", icon: ScanText, badge: "P2" },
-    { id: "history", label: "Conversion History", icon: History },
     { id: "settings", label: "Settings", icon: SettingsIcon },
   ];
 
